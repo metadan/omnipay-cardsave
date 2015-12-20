@@ -46,9 +46,24 @@ class Gateway extends AbstractGateway
         return $this->setParameter('password', $value);
     }
 
+    public function getPreSharedKey()
+    {
+        return $this->getParameter('preSharedKey');
+    }
+
+    public function setPreSharedKey($value)
+    {
+        return $this->setParameter('preSharedKey', $value);
+    }
+
     public function purchase(array $parameters = array())
     {
         return $this->createRequest('\Omnipay\CardSave\Message\PurchaseRequest', $parameters);
+    }
+
+    public function purchaseViaRedirect(array $parameters = array())
+    {
+        return $this->createRequest('\Omnipay\CardSave\Message\RedirectRequest', $parameters);
     }
 
     public function referencedPurchase(array $parameters = array())
