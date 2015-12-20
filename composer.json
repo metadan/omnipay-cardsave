@@ -1,5 +1,5 @@
 {
-    "name": "metadan/omnipay-cardsave",
+    "name": "omnipay/cardsave",
     "type": "library",
     "description": "CardSave driver for the Omnipay payment processing library with hosted/redirect support",
     "keywords": [
