@@ -27,6 +27,17 @@ class RedirectRequest extends AbstractRequest
         return $this->setParameter('preSharedKey', $value);
     }
 
+    public function setServerResultUrl($value)
+    {
+        return $this->setParameter('serverResultUrl', $value);
+    }
+
+    public function setBaseUrl($value)
+    {
+        return $this->setParameter('baseUrl', $value);
+    }
+
+
     private function buildData()
     {
         $dateTime = date('Y-m-d H:i:s O');
@@ -40,7 +51,7 @@ class RedirectRequest extends AbstractRequest
         $data['OrderID'] = $this->getTransactionId();
         $data['TransactionType'] = $this->transactionType;
         $data['TransactionDateTime'] = $dateTime;
-        $data['CallbackURL'] = 'http://shine.com/payback';
+        $data['CallbackURL'] = $this->getBaseUrl().$this->getReturnUrl();
         $data['OrderDescription'] = $this->getDescription();
         $data['CustomerName'] = $this->stripGWInvalidChars($this->getCard()->getName());
         $data['Address1'] = $this->stripGWInvalidChars($this->getCard()->getAddress1());
@@ -62,7 +73,7 @@ class RedirectRequest extends AbstractRequest
         $data['StateMandatory'] = 'true';
         $data['CountryMandatory'] = 'true';
         $data['ResultDeliveryMethod'] = 'SERVER';
-        $data['ServerResultURL'] = 'http://shine.com/server-result';
+        $data['ServerResultURL'] = $this->getBaseUrl().$this->getServerResultUrl();
         $data['PaymentFormDisplaysResult'] = 'false';
 //        $data['ServerResultURLCookieVariables'] = '';
 //        $data['ServerResultURLFormVariables'] = '';
@@ -74,23 +85,12 @@ class RedirectRequest extends AbstractRequest
 
     public function getData()
     {
-        $this->validate('amount', 'card');
+        $this->validate('amount');
 
-        $this->removeInvalidChars();
         $data = $this->buildData();
         $data['HashDigest'] = $this->buildHashDigest($data);
 
         return $data;
-    }
-
-    private function removeInvalidChars()
-    {
-        $fields = array("CustomerName", "Address1", "Address2", "Address3", "Address4", "City", "State", "PostCode", "EmailAddress", "PhoneNumber");
-        foreach ($fields as $field) {
-            if (isset($this->$field)) {
-                $this->$field = $this->stripGWInvalidChars($this->$field);
-            }
-        }
     }
 
     private function stripGWInvalidChars($strToCheck)
@@ -157,6 +157,16 @@ class RedirectRequest extends AbstractRequest
         return $this->getParameter('password');
     }
 
+    public function getServerResultURL()
+    {
+        return $this->getParameter('serverResultUrl');
+    }
+
+    public function getBaseUrl()
+    {
+        return $this->getParameter('baseUrl');
+    }
+
     public function getPreSharedKey()
     {
         return $this->getParameter('preSharedKey');
@@ -165,26 +175,6 @@ class RedirectRequest extends AbstractRequest
     public function sendData($data)
     {
         return $this->response = new RedirectResponse($this, $data);
-
-//        // the PHP SOAP library sucks, and SimpleXML can't append element trees
-//        // TODO: find PSR-0 SOAP library
-//        $document = new DOMDocument('1.0', 'utf-8');
-//        $envelope = $document->appendChild(
-//            $document->createElementNS('http://schemas.xmlsoap.org/soap/envelope/', 'soap:Envelope')
-//        );
-//        $envelope->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
-//        $envelope->setAttribute('xmlns:xsd', 'http://www.w3.org/2001/XMLSchema');
-//        $body = $envelope->appendChild($document->createElement('soap:Body'));
-//        $body->appendChild($document->importNode(dom_import_simplexml($data), true));
-//
-//        // post to Cardsave
-//        $headers = array(
-//            'Content-Type' => 'text/xml; charset=utf-8',
-//            'SOAPAction' => $this->namespace.$data->getName());
-//
-//        $httpResponse = $this->httpClient->post($this->endpoint, $headers, $document->saveXML())->send();
-//
-//        return $this->response = new Response($this, $httpResponse->getBody());
     }
 
     public function getEndPoint()
